@@ -12,8 +12,8 @@ dag_path = os.getcwd()
 
 def data_cleaning():
     s3 = boto3.Session(
-        aws_access_key_id='AKIA4MGNMM5FSIMRB6DM',
-        aws_secret_access_key='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',)
+        aws_access_key_id='',
+        aws_secret_access_key='',)
     s3_resource = s3.resource('s3')
     
     
