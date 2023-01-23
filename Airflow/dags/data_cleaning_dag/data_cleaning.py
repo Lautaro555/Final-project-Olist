@@ -10,7 +10,7 @@ from sklearn.preprocessing import LabelEncoder
 dag_path = os.getcwd() 
 
 def data_cleaning():
-    engine = create_engine("mysql+pymysql://admin:Grupo12henry@olist.ckfnxvkyn3o3.us-east-1.rds.amazonaws.com/olist")
+    engine = create_engine("")
 
     dataframe_list = []
     names_list = []
