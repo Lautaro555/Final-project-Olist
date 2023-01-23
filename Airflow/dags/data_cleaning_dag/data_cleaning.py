@@ -18,8 +18,8 @@ def data_cleaning():
 
     #Conection to amazon S3
     s3 = boto3.Session(
-        aws_access_key_id='AKIA4MGNMM5FWBMS3E6N',
-        aws_secret_access_key='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',)
+        aws_access_key_id='',
+        aws_secret_access_key='',)
     s3_resource = s3.resource('s3')
 
     #Creation of the audit table
