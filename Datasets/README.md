@@ -1,1 +1,3 @@
-Here you can find the original datasets as well as the results of the files created and used for the proyect.
+# Datasets
+- [**Original**:](./Datasets_original/) Raw files consulted to carry out the project.
+- [**Results**:](./Datasets_results/) Files created to extract relevant data.

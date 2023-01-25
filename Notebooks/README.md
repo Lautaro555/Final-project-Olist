@@ -1,1 +1,2 @@
-Here you can find the notebooks created and used in the proyect.
+# Notebooks
+Inside this folder are the Jupyter notebook files with all the different tasks made. There is also a folder in which the ML Pipeline is saved, to avoid running all the training sessions again.
