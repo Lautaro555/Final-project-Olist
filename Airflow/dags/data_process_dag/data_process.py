@@ -3,11 +3,13 @@ import datetime as dt
 import boto3
 import pandas as pd  
 import os 
+import statistics
+import numpy as np
+import keyring
 from airflow import DAG 
 from airflow.operators.python import PythonOperator
 from sqlalchemy import create_engine
 from sklearn.preprocessing import LabelEncoder
-import keyring
 
 dag_path = os.getcwd() 
 
@@ -293,11 +295,98 @@ def data_process():
             #Rename of columns
             Valoration.rename({'product_id':'distinct_prod', 'Tiempo_entrega':'delivery_avg', 'product_category_name':'distinct_categories',\
                         'review_score':'review_avg', 'order_id':'total_orders', 'price':'total_income'}, axis=1, inplace=True)
+                       
+            #sort table by income
+            Valoration.sort_values("total_income", axis=0, ascending=True,inplace=True, na_position='first')
+            Valoration.replace('NaN', np.nan)
+            #drop 125 rows with null values
+            Valoration = Valoration.dropna()
+            index=int(len(Valoration)/4)
+            df_low = Valoration.iloc[0:index]
+            df_mid_low = Valoration.iloc[index:index*2]
+            df_mid_high = Valoration.iloc[index*2:index*3]
+            df_high = Valoration.iloc[index*3:len(Valoration)]
+            
+            #split tier 4 into 4 sub-tiers
+            index=int(len(df_high)/4)
+            tier_1d = Valoration.iloc[0:index]
+            tier_1c = Valoration.iloc[index:index*2]
+            tier_1b = Valoration.iloc[index*2:index*3]
+            tier_1a = Valoration.iloc[index*3:len(df_high)]
+            
+            df_low['tier'] = "4"
+            df_mid_low['tier'] = '3'
+            df_mid_high['tier'] = '2'
+            tier_1d['tier'] = '1d'
+            tier_1c['tier'] = '1c'
+            tier_1b['tier'] = '1b'
+            tier_1a ['tier'] = '1a'
+            
+            #This function recieves a dataframe and name of column to be extracted as parameter, returns list of values adjusted to curve
+            def get_curve (df, column):
+                list = df[column].values.tolist()
+                normalized_list = []
+                max_value = max(list)
+                min_value = min(list)
+                for i in list:
+                    x = ((i - min_value)/(max_value - min_value) * 10)
+                    normalized_list.append(x)
+                
+                return normalized_list  
+            
+            #Add income KPI as new column
+            df_low['total_income_kpi'] = get_curve (df_low, 'total_income')
+            df_mid_low['total_income_kpi'] = get_curve(df_mid_low, 'total_income')
+            df_mid_high['total_income_kpi'] = get_curve(df_mid_high, "total_income")
+            tier_1d['total_income_kpi'] = get_curve(tier_1d, 'total_income')
+            tier_1c['total_income_kpi'] =  get_curve(tier_1c,'total_income')
+            tier_1b['total_income_kpi'] = get_curve(tier_1b, 'total_income')
+            tier_1a['total_income_kpi'] = get_curve(tier_1a, 'total_income')
+            
+            #Extract delivery average KPI 
+            df_low['delivery_avg_kpi'] = get_curve (df_low, 'delivery_avg')
+            df_mid_low['delivery_avg_kpi'] = get_curve(df_mid_low, 'delivery_avg')
+            df_mid_high['delivery_avg_kpi'] = get_curve(df_mid_high, "delivery_avg")
+            tier_1d['delivery_avg_kpi'] = get_curve(tier_1d, 'delivery_avg')
+            tier_1c['delivery_avg_kpi'] =  get_curve(tier_1c,'delivery_avg')
+            tier_1b['delivery_avg_kpi'] = get_curve(tier_1b, 'delivery_avg')
+            tier_1a['delivery_avg_kpi'] = get_curve(tier_1a, 'delivery_avg')
+            
+            #Extract review average KPI 
+            df_low['review_avg_kpi'] = get_curve (df_low, 'review_avg')
+            df_mid_low['review_avg_kpi'] = get_curve(df_mid_low, 'review_avg')
+            df_mid_high['review_avg_kpi'] = get_curve(df_mid_high, "review_avg")
+            tier_1d['review_avg_kpi'] = get_curve(tier_1d, 'review_avg')
+            tier_1c['review_avg_kpi'] =  get_curve(tier_1c,'review_avg')
+            tier_1b['review_avg_kpi'] = get_curve(tier_1b, 'review_avg')
+            tier_1a['review_avg_kpi'] = get_curve(tier_1a, 'review_avg')
+            
+            df_high = pd.concat([tier_1a, tier_1b, tier_1c, tier_1d])
+            
+            Valoration = pd.concat([df_low, df_mid_low, df_mid_high, df_high], axis=0)
+            
+            #create function that subtracts delivery_avg_kpi from 10, returns result
+            def flip_kpi (df, column):
+                list = df[column].values.tolist()
+                flipped_list = []
+                for i in list:
+                    res = (10 - i)
+                    flipped_list.append(res)
+                    
+                return flipped_list  
+            
+            Valoration['delivery_avg_kpi*'] = flip_kpi (Valoration, 'delivery_avg_kpi')
+            
+            Valoration['performance_kpi'] = Valoration[['total_income_kpi', 'review_avg_kpi', 'delivery_avg_kpi*']].mean(axis=1)
+            
+            Valoration.drop(columns=['delivery_avg_kpi'], inplace=True)
+            
+            Valoration.columns = Valoration.columns.str.replace("*", "")
             
             dataframe_list.append(Valoration)
             names_list.append("Valoration")
             dict["Valoration"]=dt.datetime.now().replace(microsecond=0) - timedelta(hours=3)
-
+            
         #Upload only the new rows of each dataset to the database and only of the datasets that have changes
         for n,i in enumerate(dataframe_list):
             if engine.has_table(names_list[n]) == True:
