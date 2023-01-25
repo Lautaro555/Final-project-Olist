@@ -3,13 +3,11 @@ import datetime as dt
 import boto3
 import pandas as pd  
 import os 
-import statistics
 import numpy as np
 import keyring
 from airflow import DAG 
 from airflow.operators.python import PythonOperator
 from sqlalchemy import create_engine
-from sklearn.preprocessing import LabelEncoder
 
 dag_path = os.getcwd() 
 
@@ -19,7 +17,6 @@ def data_process():
     dataframe_list = []
     names_list = []
     dict={}
-    le = LabelEncoder()
 
     #Conection to amazon S3
     s3 = boto3.Session(
