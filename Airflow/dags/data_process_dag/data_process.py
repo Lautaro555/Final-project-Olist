@@ -138,7 +138,8 @@ def data_process():
             names_list.append("Order_items")
             dict["Order_items"]=last_modified_dataset  
         else:
-            Order_items = pd.read_sql("select * from Order_items", con=engine) 
+            Order_items = pd.read_sql("select * from Order_items", con=engine)
+            Order_items = Order_items.drop(columns=['surrogate_key'])
     else:
         Order_items = pd.read_csv(csv_obj.get()['Body'])
         Order_items.drop_duplicates(inplace=True)
@@ -158,7 +159,8 @@ def data_process():
             names_list.append("Order_payments")
             dict["Order_payments"]=last_modified_dataset  
         else:
-            Order_payments = pd.read_sql("select * from Order_payments", con=engine)  
+            Order_payments = pd.read_sql("select * from Order_payments", con=engine)
+            Order_payments = Order_payments.drop(columns=['surrogate_key'])  
     else:
         Order_payments = pd.read_csv(csv_obj.get()['Body'])
         Order_payments.drop_duplicates(inplace=True)
@@ -179,6 +181,7 @@ def data_process():
             dict["Order_reviews"]=last_modified_dataset  
         else:
             Order_reviews = pd.read_sql("select * from Order_reviews", con=engine)
+            Order_reviews = Order_reviews.drop(columns=['surrogate_key'])
     else:
         Order_reviews = pd.read_csv(csv_obj.get()['Body'])
         Order_reviews.drop_duplicates(inplace=True)
@@ -199,7 +202,8 @@ def data_process():
             names_list.append("Sellers")
             dict["Sellers"]=last_modified_dataset 
         else:
-            Sellers = pd.read_sql("select * from Sellers", con=engine)         
+            Sellers = pd.read_sql("select * from Sellers", con=engine) 
+            Sellers = Sellers.drop(columns=['surrogate_key'])        
     else:
         Sellers = pd.read_csv(csv_obj.get()['Body'])
         Sellers.drop_duplicates(inplace=True)
@@ -221,6 +225,7 @@ def data_process():
             dict["Products"]=last_modified_dataset  
         else:
             Products = pd.read_sql("select * from Products", con=engine)
+            Products = Products.drop(columns=['surrogate_key'])
     else:
         Products = pd.read_csv(csv_obj.get()['Body'])
         Products.drop_duplicates(inplace=True)
@@ -240,7 +245,8 @@ def data_process():
             names_list.append("Orders")
             dict["Orders"]=last_modified_dataset  
         else:
-            Orders = pd.read_sql("select * from Orders", con=engine) 
+            Orders = pd.read_sql("select * from Orders", con=engine)
+            Orders = Orders.drop(columns=['surrogate_key'])
     else:
         Orders = pd.read_csv(csv_obj.get()['Body'])
         Orders.drop_duplicates(inplace=True)
@@ -251,7 +257,7 @@ def data_process():
     if len(names_list)>0:
         if any([n in names_list for n in ["Order_items", "Order_payments", "Order_reviews", "Sellers", "Products", "Orders"]]):
             #In the dataframe Orders a new column is added and calculated
-            Orders['Tiempo_entrega'] = pd.to_datetime(Orders["order_approved_at"]) - pd.to_datetime(Orders['order_delivered_customer_date'])
+            Orders['Tiempo_entrega'] = pd.to_datetime(Orders["order_approved_at"].dropna(),errors='coerce') - pd.to_datetime(Orders['order_delivered_customer_date'].dropna(),errors='coerce')
             Orders['Tiempo_entrega'] = Orders['Tiempo_entrega'].apply(lambda x: x.days + (x.seconds // 86400)) 
             
             #Combination of the dataframes to create a new table
@@ -260,13 +266,6 @@ def data_process():
             datasets_combinados=datasets_combinados.merge(Order_items,on="order_id")
             datasets_combinados=datasets_combinados.merge(Sellers,on="seller_id")
             datasets_combinados=datasets_combinados.merge(Products,on="product_id")
-
-            #labelencoder for id columns
-            #columnas = [0,1,9,19,20,21]
-            #datasets_combinados.columns
-            
-            #for col in columnas:
-            #    datasets_combinados[datasets_combinados.columns[col]] = le.fit_transform(datasets_combinados[datasets_combinados.columns[col]])
 
             #Adding column avg_price_month
             datasets_combinados["Month"] = pd.DatetimeIndex(datasets_combinados["order_approved_at"]).month
@@ -284,15 +283,18 @@ def data_process():
             Valoration = Valoration.merge(datasets_combinados[['seller_id', 'Tiempo_entrega']].groupby(['seller_id']).mean().round(2), on= 'seller_id')
             Valoration = Valoration.merge(datasets_combinados[['seller_id', 'review_score']].groupby(['seller_id']).mean().round(2), on= 'seller_id')
             Valoration = Valoration.merge(datasets_combinados[['seller_id', 'order_id']].groupby(['seller_id']).count(), on= 'seller_id')
-            Valoration = Valoration.merge(datasets_combinados[['seller_id', 'price']].groupby(['seller_id']).sum(), on= 'seller_id')
+            Valoration = Valoration.merge(datasets_combinados[['seller_id', 'payment_value']].groupby(['seller_id']).sum(), on= 'seller_id')
             Valoration = Valoration.merge(datasets_combinados[['seller_id', 'avg_income_month']].groupby("seller_id").mean().reset_index().round(2), on= 'seller_id')
-
+         
             Valoration.drop_duplicates(inplace=True)
 
             #Rename of columns
             Valoration.rename({'product_id':'distinct_prod', 'Tiempo_entrega':'delivery_avg', 'product_category_name':'distinct_categories',\
-                        'review_score':'review_avg', 'order_id':'total_orders', 'price':'total_income'}, axis=1, inplace=True)
-                       
+                        'review_score':'review_avg', 'order_id':'total_orders', 'payment_value':'total_income'}, axis=1, inplace=True)
+            
+            
+            Valoration= Valoration[(Valoration["delivery_avg"]>-50)]
+            
             #sort table by income
             Valoration.sort_values("total_income", axis=0, ascending=True,inplace=True, na_position='first')
             Valoration.replace('NaN', np.nan)
@@ -362,6 +364,7 @@ def data_process():
             
             Valoration = pd.concat([df_low, df_mid_low, df_mid_high, df_high], axis=0)
             
+            
             #create function that subtracts delivery_avg_kpi from 10, returns result
             def flip_kpi (df, column):
                 list = df[column].values.tolist()
@@ -379,7 +382,7 @@ def data_process():
             Valoration.drop(columns=['delivery_avg_kpi'], inplace=True)
             
             Valoration.columns = Valoration.columns.str.replace("*", "")
-            
+
             dataframe_list.append(Valoration)
             names_list.append("Valoration")
             dict["Valoration"]=dt.datetime.now().replace(microsecond=0) - timedelta(hours=3)
@@ -388,15 +391,18 @@ def data_process():
         for n,i in enumerate(dataframe_list):
             if engine.has_table(names_list[n]) == True:
                 old_data = pd.read_sql(f"select * from {names_list[n]}", con=engine)
+                old_data = old_data.drop(columns=['surrogate_key'])
 
                 data_merged = pd.merge(i, old_data, how='left', indicator=True)
                 data_appended = data_merged[data_merged['_merge'] == 'left_only']
+                data_appended = data_appended.drop(columns=['_merge'])
+
 
                 data_appended.to_sql(names_list[n], con=engine, if_exists='append', index=False, chunksize=1000)
                 timestamp= dt.datetime.now()- timedelta(hours=3)
                 
                 if not data_appended.empty:
-                    range_rows = f"{data_appended.head(1).index.values[0]} - {data_appended.tail(1).index.values[0]}"
+                    range_rows = f"{old_data.tail(1).index.values[0]} - {data_appended.tail(1).index.values[0]}"
                     new_rows = len(i) - len(old_data)
                 else:
                     range_rows = 0
@@ -410,7 +416,7 @@ def data_process():
                 range_rows = f"0 - {new_rows}"
                 timestamp= dt.datetime.now() - timedelta(hours=3)
                 engine.execute('''INSERT INTO audit (timestamp, table_name, last_modified_dataset, new_rows, rows_range, detail) 
-                                VALUES (%s,%s,%s,%s,%s,"Adding new data to table")''', (timestamp, names_list[n],dict[names_list[n]],new_rows,range_rows))
+                                VALUES (%s,%s,%s,%s,%s,"Creation of table and data load")''', (timestamp, names_list[n],dict[names_list[n]],new_rows,range_rows))
             
         print("Data succesfully loaded to database")
     else:
@@ -418,13 +424,17 @@ def data_process():
 
 def relations_tables():
     engine = create_engine(keyring.get_password("aws", "database"))
+    tables = ["Order_items", "Order_payments", "Order_reviews", "Orders", "Sellers", "Closed_deals", "Valoration", "Customers", "Products"]
     
     if not engine.has_table("surrogate_keys"):
-        engine.execute('''CREATE TABLE surrogate_keys (
+        engine.execute("""CREATE TABLE surrogate_keys (
         id INT AUTO_INCREMENT PRIMARY KEY,
         original_value VARCHAR(255) UNIQUE
-        )''')
+        )""")
     else:
+        for table in tables:
+            engine.execute(f"ALTER TABLE {table} DROP FOREIGN KEY {table}_ibfk_1")
+            engine.execute(f"ALTER TABLE {table} DROP COLUMN surrogate_key")
         engine.execute("TRUNCATE TABLE surrogate_keys")
 
     engine.execute("""INSERT INTO surrogate_keys (original_value)
@@ -455,15 +465,8 @@ def relations_tables():
     SELECT DISTINCT product_id FROM Products
     WHERE NOT EXISTS (SELECT 1 FROM surrogate_keys WHERE original_value = product_id)""")
     
-    engine.execute("ALTER TABLE Order_items ADD COLUMN surrogate_key INT;")
-    engine.execute("ALTER TABLE Order_payments ADD COLUMN surrogate_key INT;")
-    engine.execute("ALTER TABLE Order_reviews ADD COLUMN surrogate_key INT;")
-    engine.execute("ALTER TABLE Orders ADD COLUMN surrogate_key INT;")
-    engine.execute("ALTER TABLE Sellers ADD COLUMN surrogate_key INT;")
-    engine.execute("ALTER TABLE Closed_deals ADD COLUMN surrogate_key INT;")
-    engine.execute("ALTER TABLE Valoration ADD COLUMN surrogate_key INT;")
-    engine.execute("ALTER TABLE Customers ADD COLUMN surrogate_key INT;")
-    engine.execute("ALTER TABLE Products ADD COLUMN surrogate_key INT;")
+    for table in tables:
+        engine.execute(f"ALTER TABLE {table} ADD COLUMN surrogate_key INT;")
     
     engine.execute("UPDATE Order_items SET surrogate_key = (SELECT id FROM surrogate_keys WHERE original_value = order_id)")
     engine.execute("UPDATE Order_payments SET surrogate_key = (SELECT id FROM surrogate_keys WHERE original_value = order_id)")
@@ -475,34 +478,10 @@ def relations_tables():
     engine.execute("UPDATE Customers SET surrogate_key = (SELECT id FROM surrogate_keys WHERE original_value = customer_id)")
     engine.execute("UPDATE Products SET surrogate_key = (SELECT id FROM surrogate_keys WHERE original_value = product_id)")
     
-    engine.execute("""ALTER TABLE Order_items
-    ADD FOREIGN KEY (surrogate_key) REFERENCES surrogate_keys (id);""")
-
-    engine.execute("""ALTER TABLE Order_payments
-    ADD FOREIGN KEY (surrogate_key) REFERENCES surrogate_keys (id);""")
-
-    engine.execute("""ALTER TABLE Order_reviews
-    ADD FOREIGN KEY (surrogate_key) REFERENCES surrogate_keys (id);""")
-
-    engine.execute("""ALTER TABLE Orders
-    ADD FOREIGN KEY (surrogate_key) REFERENCES surrogate_keys (id);""")
-
-    engine.execute("""ALTER TABLE Sellers
-    ADD FOREIGN KEY (surrogate_key) REFERENCES surrogate_keys (id);""")
-
-    engine.execute("""ALTER TABLE Closed_deals
-    ADD FOREIGN KEY (surrogate_key) REFERENCES surrogate_keys (id);""")
-
-    engine.execute("""ALTER TABLE Products
-    ADD FOREIGN KEY (surrogate_key) REFERENCES surrogate_keys (id);""")
-
-    engine.execute("""ALTER TABLE Valoration
-    ADD FOREIGN KEY (surrogate_key) REFERENCES surrogate_keys (id);""")
-
-    engine.execute("""ALTER TABLE Customers
-    ADD FOREIGN KEY (surrogate_key) REFERENCES surrogate_keys (id);""")
+    for table in tables:
+        engine.execute(f"""ALTER TABLE {table}
+        ADD FOREIGN KEY (surrogate_key) REFERENCES surrogate_keys (id);""")
                       
-
     
 data_process_dag = DAG(
     dag_id='data_process',
