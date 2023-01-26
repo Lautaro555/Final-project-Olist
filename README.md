@@ -2,7 +2,7 @@
 <h2 align=center> Olist E-commerce complete solution </h2>
 
 <br>
-¡Hello! We are P.Castro, G.Fernandez, L.Pierotti and F.Tacchela and this our final product for the Olist company, which is last part of the training for the Henry Data Science bootcamp.
+¡Hello! We are P. Castro, G. Fernandez, L. Pierotti and F. Tacchela and this is our final product for the Olist company, which is the last part of the training for the Henry Data Science bootcamp.
 The entire proyect is in English, as requested by the Product Owner.
 
 <hr>
