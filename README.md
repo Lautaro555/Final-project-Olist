@@ -31,10 +31,15 @@ Olist is a Brazilian company that provides e-commerce services for SMEs that wor
     * [PyMysql](https://pypi.org/project/PyMySQL/)
     * [Boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html)
 * [AWS](https://aws.amazon.com/es/)
+    * Lightsail
+    * S3
+    * RDS
+    * IAM
 * [Airflow](https://airflow.apache.org/)
 * [MySQL](https://www.mysql.com/)
 * [PowerBI](https://powerbi.microsoft.com/es-es/)
 * [FastAPI](https://fastapi.tiangolo.com/)
+* [Uvicorn](https://www.uvicorn.org/)
 
 <hr>
 
@@ -49,16 +54,14 @@ Olist is a Brazilian company that provides e-commerce services for SMEs that wor
 8. Extras: API to consult KPIs
 
 ### Repository archives
-- [**Airflow**:](./Airflow/) Inside this folder is the script for the Pipeline run by Airflow.
+- [**API**:](./API/) Inside this folder is the script for the fastAPI run by Uvicorn on Lightsail VM.
+- [**Airflow**:](./Airflow/) Inside this folder is the script for the Pipeline run by Airflow on Lightsale VM.
 - [**Datasets**:](./Datasets/) Inside this folder are the raw files consulted to carry out the project, and also the files created to extract relevant data.
 - [**Notebooks**:](./Notebooks/) Inside this folder are the Jupyter notebook files with all the different tasks made. There is also a folder in which the ML Pipeline is saved, to avoid running all the training sessions again.
 - [**Dashboard**:](./Dashboard.pbix) Final file for the Dashboard.
 - [**Report**:](./Report.pdf) Complete details of all the steps and the details of the proyect workplan.
 
 <hr>
-
-## Conclusion
-
 
 Here is our contact info:  
 <a href="https://www.linkedin.com/in/pablo-castro-/"><img alt="Pablo" title="Connect with Pablo" src="https://img.shields.io/badge/P.Castro-0077B5?style=flat&logo=Linkedin&logoColor=white"></a>
