@@ -298,6 +298,7 @@ def data_process():
             #sort table by income
             Valoration.sort_values("total_income", axis=0, ascending=True,inplace=True, na_position='first')
             Valoration.replace('NaN', np.nan)
+            
             #drop 125 rows with null values
             Valoration = Valoration.dropna()
             index=int(len(Valoration)/4)
@@ -305,13 +306,15 @@ def data_process():
             df_mid_low = Valoration.iloc[index:index*2]
             df_mid_high = Valoration.iloc[index*2:index*3]
             df_high = Valoration.iloc[index*3:len(Valoration)]
+
+            df_high.sort_values("total_income", axis=0, ascending=True,inplace=True, na_position='first')
             
             #split tier 4 into 4 sub-tiers
             index=int(len(df_high)/4)
-            tier_1d = Valoration.iloc[0:index]
-            tier_1c = Valoration.iloc[index:index*2]
-            tier_1b = Valoration.iloc[index*2:index*3]
-            tier_1a = Valoration.iloc[index*3:len(df_high)]
+            tier_1d = df_high.iloc[0:index]
+            tier_1c = df_high.iloc[index:index*2]
+            tier_1b = df_high.iloc[index*2:index*3]
+            tier_1a = df_high.iloc[index*3:len(df_high)]
             
             df_low['tier'] = "4"
             df_mid_low['tier'] = '3'
