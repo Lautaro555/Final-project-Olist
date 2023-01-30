@@ -24,9 +24,9 @@ def data_process():
         aws_secret_access_key=keyring.get_password("aws", "secret key"),)
     s3_resource = s3.resource('s3')
 
-    #Creation of the audit table
-    if not engine.has_table("audit"):
-        engine.execute('''CREATE TABLE audit (
+    #Creation of the Audit table
+    if not engine.has_table("Audit"):
+        engine.execute('''CREATE TABLE Audit (
         timestamp TIMESTAMP DEFAULT NOW(),
         table_name VARCHAR(50),
         last_modified_dataset VARCHAR(50),
@@ -41,9 +41,9 @@ def data_process():
     csv_obj = s3_resource.Object("p-raw-datasets", "Datasets_original/olist_closed_deals_dataset.csv")
     last_modified_dataset = csv_obj.last_modified.strftime('%Y-%m-%d %H:%M:%S')
 
-    #If the table already exist and the last modified date is diferent to the one in the audit table in the database the new dataset is upload
+    #If the table already exist and the last modified date is diferent to the one in the Audit table in the database the new dataset is upload
     if engine.has_table("Closed_deals") == True:
-        sql_query = f"SELECT * FROM audit WHERE table_name='Closed_deals' AND last_modified_dataset='{last_modified_dataset}'"
+        sql_query = f"SELECT * FROM Audit WHERE table_name='Closed_deals' AND last_modified_dataset='{last_modified_dataset}'"
         df_query = pd.read_sql(sql_query, con=engine)
         if df_query.empty == True:
             Closed_deals = pd.read_csv(csv_obj.get()['Body'])
@@ -52,7 +52,7 @@ def data_process():
             Closed_deals['has_gtin'] = Closed_deals['has_gtin'].astype('float64')
             Closed_deals['has_company'] = Closed_deals['has_company'].astype('float64')
             
-            #The last modified date is saved for later inserting into audit table
+            #The last modified date is saved for later inserting into Audit table
             dict["Closed_deals"]=last_modified_dataset      
             
             #The table name and the dataframe is add to a list that will be use to upload the data to the database
@@ -74,7 +74,7 @@ def data_process():
     csv_obj = s3_resource.Object("p-raw-datasets", "Datasets_original/olist_customers_dataset.csv")
     last_modified_dataset = csv_obj.last_modified.strftime('%Y-%m-%d %H:%M:%S')
     if engine.has_table("Customers") == True:
-        sql_query = f"SELECT * FROM audit WHERE table_name='Customers' AND last_modified_dataset='{last_modified_dataset}'"
+        sql_query = f"SELECT * FROM Audit WHERE table_name='Customers' AND last_modified_dataset='{last_modified_dataset}'"
         df_query = pd.read_sql(sql_query, con=engine)
         if df_query.empty == True:
             Customers = pd.read_csv(csv_obj.get()['Body'])
@@ -92,7 +92,7 @@ def data_process():
     csv_obj = s3_resource.Object("p-raw-datasets", "Datasets_original/olist_geolocation_dataset.csv")
     last_modified_dataset = csv_obj.last_modified.strftime('%Y-%m-%d %H:%M:%S')
     if engine.has_table("Geolocation") == True:
-        sql_query = f"SELECT * FROM audit WHERE table_name='Geolocation' AND last_modified_dataset='{last_modified_dataset}'"
+        sql_query = f"SELECT * FROM Audit WHERE table_name='Geolocation' AND last_modified_dataset='{last_modified_dataset}'"
         df_query = pd.read_sql(sql_query, con=engine)
         if df_query.empty == True:
             Geolocation = pd.read_csv(csv_obj.get()['Body'])
@@ -111,7 +111,7 @@ def data_process():
     csv_obj = s3_resource.Object("p-raw-datasets", "Datasets_original/olist_marketing_qualified_leads_dataset.csv")
     last_modified_dataset = csv_obj.last_modified.strftime('%Y-%m-%d %H:%M:%S')
     if engine.has_table("Marketing") == True:
-        sql_query = f"SELECT * FROM audit WHERE table_name='Marketing' AND last_modified_dataset='{last_modified_dataset}'"
+        sql_query = f"SELECT * FROM Audit WHERE table_name='Marketing' AND last_modified_dataset='{last_modified_dataset}'"
         df_query = pd.read_sql(sql_query, con=engine)
         if df_query.empty == True:
             Marketing = pd.read_csv(csv_obj.get()['Body'])
@@ -129,7 +129,7 @@ def data_process():
     csv_obj = s3_resource.Object("p-raw-datasets", "Datasets_original/olist_order_items_dataset.csv")
     last_modified_dataset = csv_obj.last_modified.strftime('%Y-%m-%d %H:%M:%S')
     if engine.has_table("Order_items") == True:
-        sql_query = f"SELECT * FROM audit WHERE table_name='Order_items' AND last_modified_dataset='{last_modified_dataset}'"
+        sql_query = f"SELECT * FROM Audit WHERE table_name='Order_items' AND last_modified_dataset='{last_modified_dataset}'"
         df_query = pd.read_sql(sql_query, con=engine)
         if df_query.empty == True:
             Order_items = pd.read_csv(csv_obj.get()['Body'])
@@ -150,7 +150,7 @@ def data_process():
     csv_obj = s3_resource.Object("p-raw-datasets", "Datasets_original/olist_order_payments_dataset.csv")
     last_modified_dataset = csv_obj.last_modified.strftime('%Y-%m-%d %H:%M:%S')
     if engine.has_table("Order_payments") == True:
-        sql_query = f"SELECT * FROM audit WHERE table_name='Order_payments' AND last_modified_dataset='{last_modified_dataset}'"
+        sql_query = f"SELECT * FROM Audit WHERE table_name='Order_payments' AND last_modified_dataset='{last_modified_dataset}'"
         df_query = pd.read_sql(sql_query, con=engine)
         if df_query.empty == True:
             Order_payments = pd.read_csv(csv_obj.get()['Body'])
@@ -171,7 +171,7 @@ def data_process():
     csv_obj = s3_resource.Object("p-raw-datasets", "Datasets_original/olist_order_reviews_dataset.csv")
     last_modified_dataset = csv_obj.last_modified.strftime('%Y-%m-%d %H:%M:%S')
     if engine.has_table("Order_reviews") == True:
-        sql_query = f"SELECT * FROM audit WHERE table_name='Order_reviews' AND last_modified_dataset='{last_modified_dataset}'"
+        sql_query = f"SELECT * FROM Audit WHERE table_name='Order_reviews' AND last_modified_dataset='{last_modified_dataset}'"
         df_query = pd.read_sql(sql_query, con=engine)
         if df_query.empty == True:
             Order_reviews = pd.read_csv(csv_obj.get()['Body'])
@@ -193,7 +193,7 @@ def data_process():
     csv_obj = s3_resource.Object("p-raw-datasets", "Datasets_original/olist_sellers_dataset.csv")
     last_modified_dataset = csv_obj.last_modified.strftime('%Y-%m-%d %H:%M:%S')
     if engine.has_table("Sellers") == True:
-        sql_query = f"SELECT * FROM audit WHERE table_name='Sellers' AND last_modified_dataset='{last_modified_dataset}'"
+        sql_query = f"SELECT * FROM Audit WHERE table_name='Sellers' AND last_modified_dataset='{last_modified_dataset}'"
         df_query = pd.read_sql(sql_query, con=engine)
         if df_query.empty == True:
             Sellers = pd.read_csv(csv_obj.get()['Body'])
@@ -215,7 +215,7 @@ def data_process():
     csv_obj = s3_resource.Object("p-raw-datasets", "Datasets_original/olist_products_dataset.csv")
     last_modified_dataset = csv_obj.last_modified.strftime('%Y-%m-%d %H:%M:%S')
     if engine.has_table("Products") == True:
-        sql_query = f"SELECT * FROM audit WHERE table_name='Products' AND last_modified_dataset='{last_modified_dataset}'"
+        sql_query = f"SELECT * FROM Audit WHERE table_name='Products' AND last_modified_dataset='{last_modified_dataset}'"
         df_query = pd.read_sql(sql_query, con=engine)
         if df_query.empty == True:
             Products = pd.read_csv(csv_obj.get()['Body'])
@@ -236,7 +236,7 @@ def data_process():
     csv_obj = s3_resource.Object("p-raw-datasets", "Datasets_original/olist_orders_dataset.csv")
     last_modified_dataset = csv_obj.last_modified.strftime('%Y-%m-%d %H:%M:%S')
     if engine.has_table("Orders") == True:
-        sql_query = f"SELECT * FROM audit WHERE table_name='Orders' AND last_modified_dataset='{last_modified_dataset}'"
+        sql_query = f"SELECT * FROM Audit WHERE table_name='Orders' AND last_modified_dataset='{last_modified_dataset}'"
         df_query = pd.read_sql(sql_query, con=engine)
         if df_query.empty == True:
             Orders = pd.read_csv(csv_obj.get()['Body'])
@@ -257,8 +257,8 @@ def data_process():
     if len(names_list)>0:
         if any([n in names_list for n in ["Order_items", "Order_payments", "Order_reviews", "Sellers", "Products", "Orders"]]):
             #In the dataframe Orders a new column is added and calculated
-            Orders['Tiempo_entrega'] = pd.to_datetime(Orders["order_approved_at"].dropna(),errors='coerce') - pd.to_datetime(Orders['order_delivered_customer_date'].dropna(),errors='coerce')
-            Orders['Tiempo_entrega'] = Orders['Tiempo_entrega'].apply(lambda x: x.days + (x.seconds // 86400)) 
+            Orders['delivery_time'] = pd.to_datetime(Orders["order_approved_at"].dropna(),errors='coerce') - pd.to_datetime(Orders['order_delivered_customer_date'].dropna(),errors='coerce')
+            Orders['delivery_time'] = -(Orders['delivery_time'].apply(lambda x: x.days + (x.seconds // 86400)))
             
             #Combination of the dataframes to create a new table
             datasets_combinados=Orders.merge(Order_reviews,on="order_id")
@@ -272,40 +272,40 @@ def data_process():
             datasets_combinados["Year"] = pd.DatetimeIndex(datasets_combinados["order_approved_at"]).year
             datasets_combinados['avg_income_month'] = datasets_combinados.groupby(['seller_id','Month',"Year"])['payment_value'].transform('mean')
 
-            Valoration = pd.DataFrame(columns=['seller_id'])
-            Valoration.seller_id = datasets_combinados.seller_id.unique()
+            Evaluation = pd.DataFrame(columns=['seller_id'])
+            Evaluation.seller_id = datasets_combinados.seller_id.unique()
 
             #Merge of all necesary columns by seller_id column.
-            Valoration = Valoration.merge(datasets_combinados[['seller_id', 'seller_state']].groupby(['seller_id']).max(), on= 'seller_id')
-            Valoration = Valoration.merge(datasets_combinados[['seller_id', 'seller_city']].groupby(['seller_id']).max(), on= 'seller_id')
-            Valoration = Valoration.merge(datasets_combinados[['seller_id', 'product_id']].groupby(['seller_id']).count(), on= 'seller_id')
-            Valoration = Valoration.merge(datasets_combinados[['seller_id', 'product_category_name']].groupby(['seller_id']).nunique(), on= 'seller_id')
-            Valoration = Valoration.merge(datasets_combinados[['seller_id', 'Tiempo_entrega']].groupby(['seller_id']).mean().round(2), on= 'seller_id')
-            Valoration = Valoration.merge(datasets_combinados[['seller_id', 'review_score']].groupby(['seller_id']).mean().round(2), on= 'seller_id')
-            Valoration = Valoration.merge(datasets_combinados[['seller_id', 'order_id']].groupby(['seller_id']).count(), on= 'seller_id')
-            Valoration = Valoration.merge(datasets_combinados[['seller_id', 'payment_value']].groupby(['seller_id']).sum(), on= 'seller_id')
-            Valoration = Valoration.merge(datasets_combinados[['seller_id', 'avg_income_month']].groupby("seller_id").mean().reset_index().round(2), on= 'seller_id')
+            Evaluation = Evaluation.merge(datasets_combinados[['seller_id', 'seller_state']].groupby(['seller_id']).max(), on= 'seller_id')
+            Evaluation = Evaluation.merge(datasets_combinados[['seller_id', 'seller_city']].groupby(['seller_id']).max(), on= 'seller_id')
+            Evaluation = Evaluation.merge(datasets_combinados[['seller_id', 'product_id']].groupby(['seller_id']).count(), on= 'seller_id')
+            Evaluation = Evaluation.merge(datasets_combinados[['seller_id', 'product_category_name']].groupby(['seller_id']).nunique(), on= 'seller_id')
+            Evaluation = Evaluation.merge(datasets_combinados[['seller_id', 'delivery_time']].groupby(['seller_id']).mean().round(2), on= 'seller_id')
+            Evaluation = Evaluation.merge(datasets_combinados[['seller_id', 'review_score']].groupby(['seller_id']).mean().round(2), on= 'seller_id')
+            Evaluation = Evaluation.merge(datasets_combinados[['seller_id', 'order_id']].groupby(['seller_id']).count(), on= 'seller_id')
+            Evaluation = Evaluation.merge(datasets_combinados[['seller_id', 'payment_value']].groupby(['seller_id']).sum(), on= 'seller_id')
+            Evaluation = Evaluation.merge(datasets_combinados[['seller_id', 'avg_income_month']].groupby("seller_id").mean().reset_index().round(2), on= 'seller_id')
          
-            Valoration.drop_duplicates(inplace=True)
+            Evaluation.drop_duplicates(inplace=True)
 
             #Rename of columns
-            Valoration.rename({'product_id':'distinct_prod', 'Tiempo_entrega':'delivery_avg', 'product_category_name':'distinct_categories',\
+            Evaluation.rename({'product_id':'distinct_prod', 'delivery_time':'delivery_avg', 'product_category_name':'distinct_categories',\
                         'review_score':'review_avg', 'order_id':'total_orders', 'payment_value':'total_income'}, axis=1, inplace=True)
             
             
-            Valoration= Valoration[(Valoration["delivery_avg"]>-50)]
+            Evaluation= Evaluation[(Evaluation["delivery_avg"]<50)]
             
             #sort table by income
-            Valoration.sort_values("total_income", axis=0, ascending=True,inplace=True, na_position='first')
-            Valoration.replace('NaN', np.nan)
+            Evaluation.sort_values("total_income", axis=0, ascending=True,inplace=True, na_position='first')
+            Evaluation.replace('NaN', np.nan)
             
             #drop 125 rows with null values
-            Valoration = Valoration.dropna()
-            index=int(len(Valoration)/4)
-            df_low = Valoration.iloc[0:index]
-            df_mid_low = Valoration.iloc[index:index*2]
-            df_mid_high = Valoration.iloc[index*2:index*3]
-            df_high = Valoration.iloc[index*3:len(Valoration)]
+            Evaluation = Evaluation.dropna()
+            index=int(len(Evaluation)/4)
+            df_low = Evaluation.iloc[0:index]
+            df_mid_low = Evaluation.iloc[index:index*2]
+            df_mid_high = Evaluation.iloc[index*2:index*3]
+            df_high = Evaluation.iloc[index*3:len(Evaluation)]
 
             df_high.sort_values("total_income", axis=0, ascending=True,inplace=True, na_position='first')
             
@@ -335,6 +335,18 @@ def data_process():
                     normalized_list.append(x)
                 
                 return normalized_list  
+
+            def get_curve2 (df, column):
+                list = df[column].values.tolist()
+                normalized_list = []
+                max_value = max(list)
+                min_value = min(list)
+                for i in list:
+                    x = ((i - max_value)/(max_value - min_value) * 10)*-1
+                    normalized_list.append(x)
+                
+                return normalized_list  
+
             
             #Add income KPI as new column
             df_low['total_income_kpi'] = get_curve (df_low, 'total_income')
@@ -346,13 +358,13 @@ def data_process():
             tier_1a['total_income_kpi'] = get_curve(tier_1a, 'total_income')
             
             #Extract delivery average KPI 
-            df_low['delivery_avg_kpi'] = get_curve (df_low, 'delivery_avg')
-            df_mid_low['delivery_avg_kpi'] = get_curve(df_mid_low, 'delivery_avg')
-            df_mid_high['delivery_avg_kpi'] = get_curve(df_mid_high, "delivery_avg")
-            tier_1d['delivery_avg_kpi'] = get_curve(tier_1d, 'delivery_avg')
-            tier_1c['delivery_avg_kpi'] =  get_curve(tier_1c,'delivery_avg')
-            tier_1b['delivery_avg_kpi'] = get_curve(tier_1b, 'delivery_avg')
-            tier_1a['delivery_avg_kpi'] = get_curve(tier_1a, 'delivery_avg')
+            df_low['delivery_avg_kpi'] = get_curve2(df_low, 'delivery_avg')
+            df_mid_low['delivery_avg_kpi'] = get_curve2(df_mid_low, 'delivery_avg')
+            df_mid_high['delivery_avg_kpi'] = get_curve2(df_mid_high, "delivery_avg")
+            tier_1d['delivery_avg_kpi'] = get_curve2(tier_1d, 'delivery_avg')
+            tier_1c['delivery_avg_kpi'] =  get_curve2(tier_1c,'delivery_avg')
+            tier_1b['delivery_avg_kpi'] = get_curve2(tier_1b, 'delivery_avg')
+            tier_1a['delivery_avg_kpi'] = get_curve2(tier_1a, 'delivery_avg')
             
             #Extract review average KPI 
             df_low['review_avg_kpi'] = get_curve (df_low, 'review_avg')
@@ -365,30 +377,13 @@ def data_process():
             
             df_high = pd.concat([tier_1a, tier_1b, tier_1c, tier_1d])
             
-            Valoration = pd.concat([df_low, df_mid_low, df_mid_high, df_high], axis=0)
-            
-            
-            #create function that subtracts delivery_avg_kpi from 10, returns result
-            def flip_kpi (df, column):
-                list = df[column].values.tolist()
-                flipped_list = []
-                for i in list:
-                    res = (10 - i)
-                    flipped_list.append(res)
-                    
-                return flipped_list  
-            
-            Valoration['delivery_avg_kpi*'] = flip_kpi (Valoration, 'delivery_avg_kpi')
-            
-            Valoration['performance_kpi'] = Valoration[['total_income_kpi', 'review_avg_kpi', 'delivery_avg_kpi*']].mean(axis=1)
-            
-            Valoration.drop(columns=['delivery_avg_kpi'], inplace=True)
-            
-            Valoration.columns = Valoration.columns.str.replace("*", "")
+            Evaluation = pd.concat([df_low, df_mid_low, df_mid_high, df_high], axis=0)
+                                     
+            Evaluation['performance_kpi'] = Evaluation[['total_income_kpi', 'review_avg_kpi', 'delivery_avg_kpi']].mean(axis=1)
 
-            dataframe_list.append(Valoration)
-            names_list.append("Valoration")
-            dict["Valoration"]=dt.datetime.now().replace(microsecond=0) - timedelta(hours=3)
+            dataframe_list.append(Evaluation)
+            names_list.append("Evaluation")
+            dict["Evaluation"]=dt.datetime.now().replace(microsecond=0) - timedelta(hours=3)
             
         #Upload only the new rows of each dataset to the database and only of the datasets that have changes
         for n,i in enumerate(dataframe_list):
@@ -405,20 +400,20 @@ def data_process():
                 timestamp= dt.datetime.now()- timedelta(hours=3)
                 
                 if not data_appended.empty:
-                    range_rows = f"{old_data.tail(1).index.values[0]} - {data_appended.tail(1).index.values[0]}"
+                    range_rows = f"{old_data.tail(1).index.values[0] + 1} - {data_appended.tail(1).index.values[0]}"
                     new_rows = len(i) - len(old_data)
                 else:
                     range_rows = 0
                     new_rows = 0
                     
-                engine.execute('''INSERT INTO audit (timestamp, table_name, last_modified_dataset, new_rows, rows_range, detail) 
+                engine.execute('''INSERT INTO Audit (timestamp, table_name, last_modified_dataset, new_rows, rows_range, detail) 
                                 VALUES (%s,%s,%s,%s,%s,"Adding new data to table")''', (timestamp, names_list[n],dict[names_list[n]],new_rows,range_rows))
             else:
                 i.to_sql(names_list[n], con=engine, index=False , chunksize=1000)
                 new_rows= len(i)
-                range_rows = f"0 - {new_rows}"
+                range_rows = f"0 - {new_rows -1}"
                 timestamp= dt.datetime.now() - timedelta(hours=3)
-                engine.execute('''INSERT INTO audit (timestamp, table_name, last_modified_dataset, new_rows, rows_range, detail) 
+                engine.execute('''INSERT INTO Audit (timestamp, table_name, last_modified_dataset, new_rows, rows_range, detail) 
                                 VALUES (%s,%s,%s,%s,%s,"Creation of table and data load")''', (timestamp, names_list[n],dict[names_list[n]],new_rows,range_rows))
             
         print("Data succesfully loaded to database")
@@ -427,7 +422,7 @@ def data_process():
 
 def relations_tables():
     engine = create_engine(keyring.get_password("aws", "database"))
-    tables = ["Order_items", "Order_payments", "Order_reviews", "Orders", "Sellers", "Closed_deals", "Valoration", "Customers", "Products"]
+    tables = ["Order_items", "Order_payments", "Order_reviews", "Orders", "Sellers", "Closed_deals", "Evaluation", "Customers", "Products"]
     
     if not engine.has_table("surrogate_keys"):
         engine.execute("""CREATE TABLE surrogate_keys (
@@ -459,7 +454,7 @@ def relations_tables():
     SELECT DISTINCT seller_id FROM Closed_deals
     WHERE NOT EXISTS (SELECT 1 FROM surrogate_keys WHERE original_value = seller_id)
     UNION
-    SELECT DISTINCT seller_id FROM Valoration
+    SELECT DISTINCT seller_id FROM Evaluation
     WHERE NOT EXISTS (SELECT 1 FROM surrogate_keys WHERE original_value = seller_id)
     UNION
     SELECT DISTINCT customer_id FROM Customers
@@ -477,7 +472,7 @@ def relations_tables():
     engine.execute("UPDATE Orders SET surrogate_key = (SELECT id FROM surrogate_keys WHERE original_value = order_id)")
     engine.execute("UPDATE Sellers SET surrogate_key = (SELECT id FROM surrogate_keys WHERE original_value = seller_id)")
     engine.execute("UPDATE Closed_deals SET surrogate_key = (SELECT id FROM surrogate_keys WHERE original_value = seller_id)")
-    engine.execute("UPDATE Valoration SET surrogate_key = (SELECT id FROM surrogate_keys WHERE original_value = seller_id)")
+    engine.execute("UPDATE Evaluation SET surrogate_key = (SELECT id FROM surrogate_keys WHERE original_value = seller_id)")
     engine.execute("UPDATE Customers SET surrogate_key = (SELECT id FROM surrogate_keys WHERE original_value = customer_id)")
     engine.execute("UPDATE Products SET surrogate_key = (SELECT id FROM surrogate_keys WHERE original_value = product_id)")
     
