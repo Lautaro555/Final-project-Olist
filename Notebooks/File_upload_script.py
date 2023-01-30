@@ -17,14 +17,14 @@ def select_file():
 
 def update_s3(filepath):
     table_name = table_var.get()
-    # Read the columns of the selected file 
+    # leer las columnas del archivo elegido por el usuario
     df_new = pd.read_csv(filepath)
     new_cols = df_new.columns
-    # Read the columns of the existing file in S3
+    # leer las columnas del archivo existente en el bucket
     obj = s3_resource.Object('p-raw-datasets', f'Datasets_original/{table_name}.csv')
     df_existing = pd.read_csv(obj.get()['Body'])
     existing_cols = df_existing.columns
-    # Compare
+    # comparar las columnas
     if new_cols.equals(existing_cols):
         s3_resource.meta.client.upload_file(filepath, 'p-raw-datasets', f'Datasets_original/{table_name}.csv')
         print("File uploaded successfully")
@@ -34,10 +34,16 @@ def update_s3(filepath):
 root = tk.Tk()
 root.geometry("400x300")
 root.title("Select the CSV you want to update")
+background_image = tk.PhotoImage(file = "background_image.png")
+background_label = tk.Label(root, image = background_image)
+background_label.place(x = 0, y = 0, relwidth = 1, relheight = 1)
+
 
 table_var = tk.StringVar(value="olist_closed_deals_dataset")
 table_dropdown = tk.OptionMenu(root, table_var, "olist_closed_deals_dataset", "olist_customers_dataset", "olist_geolocation_dataset", "olist_marketing_qualified_leads_dataset", "olist_order_items_dataset", "olist_order_payments_dataset", "olist_order_reviews_dataset", "olist_orders_dataset","olist_products_dataset","olist_sellers_dataset")
 table_dropdown.pack()
+
+
 
 file_button = tk.Button(root, text="Select path to the CSV you want to upload", command=select_file)
 file_button.pack()
