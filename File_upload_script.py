@@ -17,14 +17,14 @@ def select_file():
 
 def update_s3(filepath):
     table_name = table_var.get()
-    # leer las columnas del archivo elegido por el usuario
+    # Read the columns of the selected file 
     df_new = pd.read_csv(filepath)
     new_cols = df_new.columns
-    # leer las columnas del archivo existente en el bucket
+    # Read the columns of the existing file in S3
     obj = s3_resource.Object('p-raw-datasets', f'Datasets_original/{table_name}.csv')
     df_existing = pd.read_csv(obj.get()['Body'])
     existing_cols = df_existing.columns
-    # comparar las columnas
+    # Compare
     if new_cols.equals(existing_cols):
         s3_resource.meta.client.upload_file(filepath, 'p-raw-datasets', f'Datasets_original/{table_name}.csv')
         print("File uploaded successfully")
