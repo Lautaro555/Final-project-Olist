@@ -50,14 +50,16 @@ Olist is a Brazilian company that provides e-commerce services for SMEs that wor
 6. Database and Dashboard connection
 7. Extras: Machine Learning Model
 8. Extras: API to consult KPIs
+9. Extras: Recommendations to the Olist clients
 
 ### Repository archives
 - [**API**:](./API/) Inside this folder is the script for the fastAPI run by Uvicorn on Lightsail VM.
 - [**Airflow**:](./Airflow/) Inside this folder is the script for the Pipeline run by Airflow on Lightsale VM.
+- [**Dashboards**:](./Dashboards/) Inside this folder is the PowerBI file with the final Dashboard.
 - [**Datasets**:](./Datasets/) Inside this folder are the raw files consulted to carry out the project, and also the files created to extract relevant data.
 - [**Notebooks**:](./Notebooks/) Inside this folder are the Jupyter notebook files with all the different tasks made. There is also a folder in which the ML Pipeline is saved, to avoid running all the training sessions again.
-- [**Dashboards**:](./Dashboards/) Inside this folder are the PowerBI files with the final Dashboard, as well as our suggestions to the company.
-- [**Report**:](./Report.pdf) Complete details of all the steps and the details of the proyect workplan.
+- [**Recommendations**:](./Recommendations/) Inside this folder is the PowerBI file with our suggestions to the company, and a PDF that can be emailed to the clients.
+- [**Report**](./Report_english.pdf/): Complete details of all the steps and the details of the proyect workplan, in spanish and english version.
 
 <hr>
 
